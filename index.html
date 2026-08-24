@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Read-EE — Oral Reading Diagnostic Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Read-EE</span>
+      <span class="brand-sub">Oral Reading Diagnostic</span>
+    </div>
+    <ol class="stepper" id="stepper">
+      <li data-step="setup" class="active"><span>1</span>Setup</li>
+      <li data-step="read"><span>2</span>Read Aloud</li>
+      <li data-step="report"><span>3</span>Diagnosis</li>
+    </ol>
+  </header>
+
+  <main>
+
+    <!-- ===================== STAGE 1: SETUP ===================== -->
+    <section class="stage" id="stage-setup">
+      <div class="hero">
+        <h1>Every miscue tells you something.</h1>
+        <p>Read-EE listens to a learner read a passage aloud, lines up what they said against the reference text word by word using Levenshtein alignment, then runs the resulting pattern of mispronunciations, substitutions, omissions, insertions and repetitions through a decision tree to name the likely difficulty type.</p>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label for="learnerName">Learner name <span style="font-weight:400;color:var(--ink-muted);">(optional)</span></label>
+          <input class="text-input" id="learnerName" type="text" placeholder="e.g. Ana Dela Cruz" />
+        </div>
+
+        <div class="field">
+          <label>Language</label>
+          <div class="segmented" id="langSeg">
+            <button type="button" data-value="en" class="active">English</button>
+            <button type="button" data-value="fil">Filipino</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Grade level <span style="font-weight:400;color:var(--ink-muted);">(sets the reading-rate benchmark)</span></label>
+          <div class="segmented" id="gradeSeg">
+            <button type="button" data-value="Grade 1">Grade 1</button>
+            <button type="button" data-value="Grade 2" class="active">Grade 2</button>
+            <button type="button" data-value="Grade 3">Grade 3</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Passage</label>
+          <div class="segmented" id="sourceSeg">
+            <button type="button" data-value="sample" class="active">Sample passage</button>
+            <button type="button" data-value="custom">Custom passage</button>
+          </div>
+          <div id="samplePreviewWrap">
+            <p class="passage-preview" id="samplePreview"></p>
+          </div>
+          <div id="customWrap" style="display:none; margin-top:14px;">
+            <textarea class="text-input" id="customPassage" placeholder="Paste or type the passage the learner will read aloud…"></textarea>
+          </div>
+          <p class="field-hint" id="passageHint">Built-in sample passages are for trying the tool out. For an actual assessment, paste the passage from your reading instrument (e.g. a Phil-IRI passage) as a custom passage instead.</p>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="beginBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            Begin session
+          </button>
+        </div>
+      </div>
+
+      <details class="about">
+        <summary>How the diagnosis works</summary>
+        <div class="about-body">
+          <p><strong>Alignment.</strong> The reference passage and the recognized speech are each split into words, then aligned with a word-level Levenshtein (edit-distance) algorithm — the same technique behind spell-checkers and word-error-rate scoring — to find the minimum set of matches, substitutions, omissions and insertions that turns one sequence into the other.</p>
+          <p><strong>Sub-classification.</strong> Each substitution is re-scored with a character-level Levenshtein distance between the two words. A spoken word that is orthographically close to the reference word (e.g. "sleap" for "sleep") is labeled a <em>mispronunciation</em>; a spoken word that is simply a different word is labeled a <em>substitution</em>. Extra words that echo a neighboring word are labeled <em>repetitions</em> rather than plain insertions.</p>
+          <p><strong>Decision tree.</strong> Word-recognition accuracy is banded the way an informal reading inventory bands it — independent (≥97%), instructional (90–96%), frustration (&lt;90%) — then cross-referenced with reading rate (words correct per minute) and whichever miscue type dominates, to output a specific difficulty type rather than only a level.</p>
+          <p><strong>Limitations.</strong> Recognition quality depends on the browser's speech service, which is not tuned for children's or accented speech and can silently "auto-correct" a mispronunciation to the intended real word — undercounting some miscues, exactly as this project's own faster-whisper testing notes observed. Treat Read-EE as a fast screening aid, not a replacement for a trained examiner's judgment.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===================== STAGE 2: READ ALOUD ===================== -->
+    <section class="stage" id="stage-read" hidden>
+      <div class="hero" style="padding-bottom:18px;">
+        <h1 style="font-size:clamp(1.4rem,2.6vw,1.8rem);">Reading session</h1>
+        <p>Hand the device to the learner, or hold it where the microphone can hear them clearly, then press the microphone to begin.</p>
+      </div>
+
+      <div id="readBanner" class="banner banner-error" hidden></div>
+
+      <div class="read-layout">
+        <div class="card passage-card">
+          <h3>Passage</h3>
+          <p class="passage-text" id="readPassageText"></p>
+        </div>
+
+        <div class="card mic-panel">
+          <div class="mic-ring-wrap">
+            <div class="mic-ring" id="micRing"></div>
+            <button class="btn mic-btn" id="micBtn" style="width:72px;height:72px;border-radius:50%;">
+              <svg id="micIcon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                <path d="M5 10a7 7 0 0 0 14 0"></path>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="mic-status" id="micStatus" aria-live="polite">Ready when you are</div>
+          <div class="timer" id="timer">00:00</div>
+
+          <div class="transcript-panel">
+            <h4>Live transcript</h4>
+            <div class="transcript-box" id="transcriptBox" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="backToSetup">&larr; Back to setup</button>
+      </div>
+    </section>
+
+    <!-- ===================== STAGE 3: REPORT ===================== -->
+    <section class="stage" id="stage-report" hidden>
+      <div id="reportContent"></div>
+    </section>
+
+  </main>
+
+  <p class="foot">Read-EE runs entirely in this browser tab. Speech is sent to your browser's built-in speech recognition service to produce a transcript; this app does not record, upload or store audio itself. Built as a screening aid for early-grade oral reading — always confirm a diagnosis with a qualified reading teacher.</p>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
