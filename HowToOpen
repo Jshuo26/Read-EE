@@ -1,0 +1,2 @@
+1. paste nyo lang to sa terminal "py -m http.server 8000"
+2. tapos open nyo chrome or edge nyo paste nyo to "http://localhost:8000/index.html"
