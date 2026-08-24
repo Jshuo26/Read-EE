@@ -1,6 +1,3 @@
-/* =====================================================================
-   CONFIG — thresholds are general defaults, calibrate to your instrument
-   ===================================================================== */
 const CONFIG = {
   independentAccuracy: 0.97,
   instructionalAccuracy: 0.90,

@@ -1,6 +1,3 @@
-/* =====================================================================
-   STAGE 1: SETUP — DOM refs
-   ===================================================================== */
 const samplePreview = el('samplePreview');
 const customWrap = el('customWrap');
 const samplePreviewWrap = el('samplePreviewWrap');

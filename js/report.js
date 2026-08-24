@@ -1,7 +1,3 @@
-/* =====================================================================
-   STAGE 3: DIAGNOSIS — alignment, decision tree, report rendering
-   (validated separately against a battery of miscue scenarios)
-   ===================================================================== */
 function alignWords(refTokens, hypTokens) {
   const m = refTokens.length, n = hypTokens.length;
   const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));

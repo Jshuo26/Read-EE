@@ -1,6 +1,3 @@
-/* =====================================================================
-   STAGE 2: READ ALOUD — Web Speech API + live audio level ring
-   ===================================================================== */
 const SpeechRecognitionImpl = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null, listening = false, stopping = false, fatalError = false;
 let startTime = 0, endTime = 0, timerInterval = null, stopSafetyTimer = null;
